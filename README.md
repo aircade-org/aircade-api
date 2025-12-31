@@ -1,2 +1,1 @@
-# aircade-api
-AirCade API
+# AirCade API
