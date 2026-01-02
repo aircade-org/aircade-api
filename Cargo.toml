@@ -3,4 +3,72 @@ name = "aircade-api"
 version = "0.1.0"
 edition = "2024"
 
+# ==================================================================================================
+# Linting Configuration
+# ==================================================================================================
+
+[lints.rust]
+unsafe_code = { level = "forbid" } # Forbid unsafe code entirely for memory safety
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }       # Enable all standard Clippy lints as errors
+pedantic = { level = "warn", priority = -1 }  # Extra pedantic lints for code quality
+nursery = { level = "warn", priority = -1 }   # Experimental lints (may have false positives)
+cargo = { level = "warn", priority = -1 }     # Cargo-specific lints (dependencies, features)
+multiple_crate_versions = { level = "allow" } # Allow multiple versions of same crate (common in large projects)
+unwrap_used = { level = "deny" }              # Forbid .unwrap() to enforce proper error handling
+expect_used = { level = "deny" }              # Forbid .expect() to enforce proper error handling
+panic = { level = "deny" }                    # Forbid panic!() macro to ensure graceful error handling
+
+# ==================================================================================================
+# Build Profiles
+# ==================================================================================================
+
+[profile.dev]
+opt-level = 1 # Basic optimizations for faster dev iteration while maintaining decent performance
+
+[profile.release]
+opt-level = 3           # Maximum optimizations for best runtime performance
+lto = "fat"             # Link-Time Optimization across all crates (smaller binary, better perf)
+codegen-units = 1       # Single codegen unit for better optimization (slower compile, faster runtime)
+strip = true            # Strip debug symbols for smaller binary (~30-40% reduction)
+panic = "abort"         # Abort on panic instead of unwinding (smaller binary, no cleanup)
+incremental = false     # Disable incremental compilation for clean release builds
+overflow-checks = false # Disable overflow checks for maximum performance (use with caution!)
+
+# ==================================================================================================
+# Code Dependencies
+# ==================================================================================================
+
 [dependencies]
+# Web Framework & Server
+axum = { version = "0.8", features = ["default"] }             # Modern web framework built on Tokio/Tower
+tower = { version = "0.5", features = [] }                     # Middleware and service abstractions
+tower-http = { version = "0.6", features = ["cors", "trace"] } # HTTP middleware (CORS, logging, etc.)
+
+# Async Runtime
+tokio = { version = "1.49", features = ["full"] } # Async runtime for non-blocking I/O
+
+# Database & ORM
+sea-orm = { version = "1.1", features = [
+    "sqlx-postgres",        # PostgreSQL support via SQLx
+    "runtime-tokio-rustls", # Tokio async runtime with TLS
+    "macros"                # Macros to derive Entity/Model
+] }
+sea-orm-migration = { version = "1.1", features = ["default"] } # Migration system for SeaORM
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }       # Serialization framework
+serde_json = { version = "1.0", features = ["default"] } # JSON support for Serde
+
+# Error Handling & Logging
+anyhow = { version = "1.0", features = ["default"] }                # Simplified error handling with context
+tracing = { version = "0.1", features = ["default"] }               # Structured logging framework
+tracing-subscriber = { version = "0.3", features = ["env-filter"] } # Tracing subscriber implementation
+
+# Configuration
+dotenvy = { version = "0.15", features = [] } # Load environment variables from .env files
+
+# Utilities
+chrono = { version = "0.4", features = ["default"] } # Date and time manipulation
+async-trait = { version = "0.1", features = [] }     # Async traits for SeaORM migrations
