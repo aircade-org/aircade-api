@@ -13,5 +13,5 @@ use anyhow::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    api::Api::launch()
+    Ok(api::Api::launch().await?)
 }
