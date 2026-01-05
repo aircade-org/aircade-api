@@ -2,6 +2,11 @@
 
 Backend API for AirCade - a browser-based party game platform where any screen becomes the console and everyone plays together using their phones as controllers.
 
+## Deployed on Railway.app
+
+- [AirCade API](https://railway.com/project/002c50d8-5995-4f1a-9745-699c0286d272)
+- [AirCade DataBase](https://railway.com/project/e5cd0061-1bab-4e29-944b-6999217086fb)
+
 ## Tech Stack
 
 - **Language**: Rust
