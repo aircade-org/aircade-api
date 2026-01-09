@@ -26,12 +26,15 @@ impl Config {
             AppError::Config("DATABASE_URL environment variable not set".to_string())
         })?;
 
-        let server_host = env::var("SERVER_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+        // Default to 0.0.0.0 for container deployments (Railway, Docker)
+        let server_host = env::var("SERVER_HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
 
-        let server_port = env::var("SERVER_PORT")
+        // Railway provides PORT, fallback to SERVER_PORT or 3000
+        let server_port = env::var("PORT")
+            .or_else(|_| env::var("SERVER_PORT"))
             .unwrap_or_else(|_| "3000".to_string())
             .parse::<u16>()
-            .map_err(|_| AppError::Config("Invalid SERVER_PORT value".to_string()))?;
+            .map_err(|_| AppError::Config("Invalid PORT/SERVER_PORT value".to_string()))?;
 
         let environment = env::var("ENVIRONMENT").unwrap_or_else(|_| "development".to_string());
 
