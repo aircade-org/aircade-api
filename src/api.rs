@@ -20,14 +20,25 @@ pub struct Api;
 impl Api {
     /// Initialize and launch the API server
     pub async fn launch() -> Result<(), AppError> {
-        // Load configuration
-        let config = Config::from_env()?;
+        // Initialize basic tracing first so we can see startup errors
+        Self::init_early_tracing();
 
-        // Initialize tracing/logging
-        Self::init_tracing(&config);
+        tracing::info!("AirCade API starting up...");
+
+        // Load configuration
+        let config = match Config::from_env() {
+            Ok(cfg) => {
+                tracing::info!("Configuration loaded successfully");
+                cfg
+            }
+            Err(e) => {
+                tracing::error!("Failed to load configuration: {}", e);
+                return Err(e);
+            }
+        };
 
         tracing::info!("Starting AirCade API server");
-        tracing::debug!("Configuration loaded: {:?}", config);
+        tracing::debug!("Configuration: host={}, port={}", config.server_host, config.server_port);
 
         // Connect to database
         let db = Self::connect_database(&config).await?;
@@ -50,24 +61,42 @@ impl Api {
         Ok(())
     }
 
-    /// Initialize tracing subscriber for structured logging
-    fn init_tracing(config: &Config) {
-        tracing_subscriber::registry()
-            .with(
-                tracing_subscriber::EnvFilter::try_from_default_env()
-                    .unwrap_or_else(|_| config.log_level.clone().into()),
-            )
+    /// Initialize early tracing so we can see startup errors before config is loaded
+    fn init_early_tracing() {
+        // Use a simple format that works before config is available
+        let _ = tracing_subscriber::registry()
+            .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
             .with(tracing_subscriber::fmt::layer())
-            .init();
+            .try_init();
     }
 
-    /// Connect to the database
+    /// Initialize tracing subscriber for structured logging (no-op if already initialized)
+    #[allow(dead_code)]
+    fn init_tracing(_config: &Config) {
+        // Early tracing already initialized, this is kept for API compatibility
+    }
+
+    /// Connect to the database with timeout
     async fn connect_database(config: &Config) -> Result<DatabaseConnection, AppError> {
         tracing::info!("Connecting to database...");
 
-        let db = Database::connect(&config.database_url)
+        // Log the database host (not the full URL for security)
+        if let Some(host) = config.database_url.split('@').nth(1) {
+            tracing::info!("Database host: {}", host.split('/').next().unwrap_or("unknown"));
+        }
+
+        // Add a 30-second timeout for database connection
+        let connect_future = Database::connect(&config.database_url);
+        let db = tokio::time::timeout(std::time::Duration::from_secs(30), connect_future)
             .await
-            .map_err(|e| AppError::Database(format!("Failed to connect to database: {e}")))?;
+            .map_err(|_| {
+                tracing::error!("Database connection timed out after 30 seconds");
+                AppError::Database("Database connection timed out".to_string())
+            })?
+            .map_err(|e| {
+                tracing::error!("Database connection failed: {}", e);
+                AppError::Database(format!("Failed to connect to database: {e}"))
+            })?;
 
         tracing::info!("Database connection established");
 
