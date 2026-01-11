@@ -4,13 +4,14 @@ use sea_orm::{Database, DatabaseConnection};
 use sea_orm_migration::MigratorTrait;
 use std::sync::Arc;
 use tokio::signal;
+use tokio::sync::RwLock;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 /// Application state shared across handlers
 #[derive(Clone)]
 pub struct AppState {
-    pub db: DatabaseConnection,
+    pub db: Arc<RwLock<Option<DatabaseConnection>>>,
     #[allow(dead_code)]
     pub config: Config,
 }
@@ -40,22 +41,37 @@ impl Api {
         tracing::info!("Starting AirCade API server");
         tracing::debug!("Configuration: host={}, port={}", config.server_host, config.server_port);
 
-        // Connect to database
-        let db = Self::connect_database(&config).await?;
-
-        // Run migrations
-        Self::run_migrations(&db).await?;
-
-        // Create application state
+        // Create application state with no DB connection yet
         let state = Arc::new(AppState {
-            db,
+            db: Arc::new(RwLock::new(None)),
             config: config.clone(),
         });
 
         // Build router
-        let app = Self::build_router(state);
+        let app = Self::build_router(Arc::clone(&state));
 
-        // Start server
+        // Spawn database connection in the background so the server starts immediately
+        let db_state = Arc::clone(&state);
+        let db_config = config.clone();
+        tokio::spawn(async move {
+            match Self::connect_database(&db_config).await {
+                Ok(db) => {
+                    // Run migrations
+                    if let Err(e) = Self::run_migrations(&db).await {
+                        tracing::error!("Migration failed: {e}");
+                        return;
+                    }
+                    let mut db_lock = db_state.db.write().await;
+                    *db_lock = Some(db);
+                    tracing::info!("Database ready");
+                }
+                Err(e) => {
+                    tracing::error!("Database initialization failed: {e}");
+                }
+            }
+        });
+
+        // Start server immediately (health endpoint available right away)
         Self::start_server(app, &config).await?;
 
         Ok(())

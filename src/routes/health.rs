@@ -13,9 +13,13 @@ struct HealthResponse {
 /// Health check endpoint handler
 async fn health_check(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     // Check database connectivity
-    let db_status = match state.db.ping().await {
-        Ok(()) => "connected",
-        Err(_) => "disconnected",
+    let db_lock = state.db.read().await;
+    let db_status = match db_lock.as_ref() {
+        Some(db) => match db.ping().await {
+            Ok(()) => "connected",
+            Err(_) => "disconnected",
+        },
+        None => "connecting",
     };
 
     let response = HealthResponse {
