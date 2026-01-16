@@ -12,8 +12,8 @@ pub struct Config {
     pub server_port: u16,
     /// Environment (development, production)
     pub environment: String,
-    /// Log level (trace, debug, info, warn, error)
-    pub log_level: String,
+    // Log level (trace, debug, info, warn, error)
+    // pub log_level: String,
 }
 
 impl Config {
@@ -38,14 +38,14 @@ impl Config {
 
         let environment = env::var("ENVIRONMENT").unwrap_or_else(|_| "development".to_string());
 
-        let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
+        // let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
 
         Ok(Self {
             database_url,
             server_host,
             server_port,
             environment,
-            log_level,
+            // log_level,
         })
     }
 
