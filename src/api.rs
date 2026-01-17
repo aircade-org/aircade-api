@@ -145,6 +145,7 @@ impl Api {
     fn build_router(state: Arc<AppState>) -> Router {
         Router::new()
             .merge(routes::health::routes())
+            .merge(routes::games::routes())
             .layer(CorsLayer::permissive())
             .layer(TraceLayer::new_for_http())
             .with_state(state)
