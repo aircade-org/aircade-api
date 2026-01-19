@@ -4,7 +4,24 @@
       "Bash(git branch:*)",
       "Bash(git -C \"C:\\\\Users\\\\Spijkerman\\\\Repositories\\\\aircade\\\\aircade-api\" branch -a)",
       "Bash(cargo --version:*)",
-      "Bash(rustc:*)"
+      "Bash(rustc:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.sea-ql.org)",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:learning.angarsa.com)",
+      "WebFetch(domain:leapcell.io)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:oneuptime.com)",
+      "Bash(cargo fmt:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo build:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(curl:*)",
+      "Bash(cargo run:*)",
+      "Bash(python -m json.tool:*)"
     ]
   }
 }

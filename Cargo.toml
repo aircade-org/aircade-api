@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "migration"]
+
 [package]
 name = "aircade-api"
 version = "0.1.0"
@@ -57,6 +60,7 @@ tokio = { version = "1.49", features = ["full"] } # Async runtime for non-blocki
 # Database & ORM
 sea-orm = { version = "1.1", features = [
     "sqlx-postgres",        # PostgreSQL support via SQLx
+    "sqlx-sqlite",          # SQLite support for integration tests
     "runtime-tokio-rustls", # Tokio async runtime with TLS
     "macros"                # Macros to derive Entity/Model
 ] }
@@ -78,3 +82,15 @@ dotenvy = { version = "0.15", features = [] } # Load environment variables from 
 chrono = { version = "0.4", features = ["default"] } # Date and time manipulation
 async-trait = { version = "0.1", features = [] }     # Async traits for SeaORM migrations
 rand = { version = "0.8", features = ["default"] }   # Random number generation for game codes
+uuid = { version = "1.0", features = ["v4"] }        # UUID generation for entity identifiers
+
+# Internal crates
+migration = { path = "migration" } # SeaORM database migrations
+
+# ==================================================================================================
+# Test Dependencies
+# ==================================================================================================
+
+[dev-dependencies]
+http-body-util = "0.1" # Body collection utilities for testing Axum responses
+tower = { version = "0.5", features = ["util"] } # ServiceExt::oneshot for test requests
