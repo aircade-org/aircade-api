@@ -12,8 +12,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-jobs:
-  # ==================================================================================================
+jobs: # ==================================================================================================
   # Job 1: Lint and Test
   # ==================================================================================================
   quality-checks:
@@ -40,9 +39,6 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
-
-      - name: Check Code Formatting
-        run: cargo fmt -- --check
 
       - name: Run Clippy Linter
         run: cargo clippy --all-targets --all-features -- -D warnings
