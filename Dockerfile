@@ -12,23 +12,29 @@ RUN apt-get update \
 RUN rustc --version \
     && cargo --version
 
-# Create a new empty project to cache dependencies
+# Create dummy workspace to cache dependencies
 WORKDIR /app
-RUN cargo init --name aircade-api
+RUN cargo init --name aircade-api \
+    && mkdir -p migration/src \
+    && echo "fn main() {}" > migration/src/main.rs \
+    && echo "pub fn lib() {}" > migration/src/lib.rs
 
-# Copy manifests
+# Copy all manifests (root + workspace members)
 COPY Cargo.toml Cargo.lock ./
+COPY migration/Cargo.toml migration/Cargo.toml
 
 # Build dependencies only (caching layer)
 RUN cargo build --release \
-    && rm src/*.rs
+    && rm src/*.rs \
+    && rm migration/src/*.rs
 
-# Copy source code
+# Copy full source code
 COPY . .
 
 # Build the application
 # Force rebuild of application code (dependencies are cached)
-RUN rm ./target/release/deps/aircade_api* \
+RUN rm -f ./target/release/deps/aircade_api* \
+    && rm -f ./target/release/deps/libmigration* \
     && cargo build --release --locked
 
 # ==================================================================================================
