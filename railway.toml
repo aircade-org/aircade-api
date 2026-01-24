@@ -1,0 +1,19 @@
+# Railway.app Configuration for AirCade API
+# Documentation: https://docs.railway.app/reference/config-as-code
+
+[build]
+# Use the official Rust Docker image optimized for Railway
+builder = "nixpacks"
+# Build with release profile for maximum optimization
+buildCommand = "cargo build --release"
+
+[deploy]
+# Start the compiled binary
+startCommand = "./target/release/aircade-api"
+# Health check endpoint (implement /health in your API)
+healthcheckPath = "/health"
+# Timeout for health checks (seconds)
+healthcheckTimeout = 100
+# Number of seconds to wait before restarting unhealthy service
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10

@@ -117,9 +117,9 @@ SERVER_PORT=3001
 
 ## Next Steps
 
-1. Read the full [README.md](README.md) for detailed documentation
+1. Read the full [README.md](../README.md) for detailed documentation
 2. Check `docs/milestones_implementation_summaries/*` for architecture details
-3. Review the [milestone roadmap](docs/milestones.md) for upcoming features
+3. Review the [milestone roadmap](milestones.md) for upcoming features
 
 ## Quick Reference
 
@@ -147,6 +147,6 @@ LOG_LEVEL=debug
 
 For issues or questions:
 
-- Check the [README.md](README.md) troubleshooting section
-- Review the [CLAUDE.md](CLAUDE.md) project guidelines
+- Check the [README.md](../README.md) troubleshooting section
+- Review the [CLAUDE.md](../CLAUDE.md) project guidelines
 - Open an issue on GitHub
