@@ -2,6 +2,11 @@
 name = "aircade-api"
 version = "0.1.0"
 edition = "2024"
+description = "Backend API for AirCade - a browser-based party game platform"
+license = "MIT"
+repository = "https://github.com/aircade-org/aircade-api"
+keywords = ["game", "api", "websocket", "party-game"]
+categories = ["games", "web-programming"]
 
 # ==================================================================================================
 # Linting Configuration
