@@ -3,7 +3,7 @@ members = [".", "migration"]
 
 [package]
 name = "aircade-api"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "Backend API for AirCade - a browser-based party game platform"
 license = "MIT"
@@ -77,6 +77,14 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] } # Tracing su
 
 # Configuration
 dotenvy = { version = "0.15", features = [] } # Load environment variables from .env files
+
+# Authentication
+jsonwebtoken = { version = "9.3", features = ["default"] } # JWT creation and validation
+argon2 = { version = "0.5", features = ["default"] }       # Argon2id password hashing
+
+# OAuth2
+oauth2 = { version = "5.0", features = ["reqwest"] }                                       # OAuth2 client (Google, GitHub)
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false } # HTTP client for OAuth token exchange
 
 # Utilities
 chrono = { version = "0.4", features = ["default"] } # Date and time manipulation

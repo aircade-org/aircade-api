@@ -21,7 +21,8 @@
       "Bash(docker-compose up:*)",
       "Bash(curl:*)",
       "Bash(cargo run:*)",
-      "Bash(python -m json.tool:*)"
+      "Bash(python -m json.tool:*)",
+      "WebFetch(domain:docs.rs)"
     ]
   }
 }

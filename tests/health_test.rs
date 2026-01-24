@@ -1,17 +1,19 @@
 mod common;
 
-use axum::Router;
 use axum::http::StatusCode;
+use axum::Router;
+use migration::{Migrator, MigratorTrait};
 
 use aircade_api::config::{Config, Environment};
 use aircade_api::state::AppState;
 
-/// Build the app router backed by an in-memory `SQLite` database.
-/// This avoids needing `PostgreSQL` for simple route tests.
+/// Build the app router backed by an in-memory `SQLite` database with migrations.
 async fn test_app() -> Router {
     let db = sea_orm::Database::connect("sqlite::memory:")
         .await
         .unwrap_or_default();
+
+    Migrator::up(&db, None).await.unwrap_or_default();
 
     let state = AppState {
         db,
@@ -21,6 +23,16 @@ async fn test_app() -> Router {
             server_port: 0,
             environment: Environment::Development,
             log_level: "warn".to_string(),
+            jwt_secret: "test-secret-key-for-testing-only-32chars".to_string(),
+            jwt_access_expiration_secs: 900,
+            jwt_refresh_expiration_secs: 604_800,
+            google_client_id: String::new(),
+            google_client_secret: String::new(),
+            google_redirect_uri: String::new(),
+            github_client_id: String::new(),
+            github_client_secret: String::new(),
+            github_redirect_uri: String::new(),
+            frontend_url: "http://localhost:3001".to_string(),
         },
     };
 
