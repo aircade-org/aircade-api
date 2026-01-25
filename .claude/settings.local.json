@@ -10,7 +10,9 @@
       "Bash(test:*)",
       "Bash(cargo fmt:*)",
       "Bash(ls:*)",
-      "Bash(rustc:*)"
+      "Bash(rustc:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo check:*)"
     ]
   }
 }
