@@ -9,7 +9,8 @@
       "Bash(cargo build:*)",
       "Bash(test:*)",
       "Bash(cargo fmt:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(rustc:*)"
     ]
   }
 }
