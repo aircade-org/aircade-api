@@ -127,7 +127,7 @@ impl Api {
             signal::unix::signal(signal::unix::SignalKind::terminate())
                 .map_err(|e| tracing::error!("Failed to install signal handler: {e}"))
                 .ok()
-                .and_then(|mut s| async { s.recv().await }.into());
+                .and_then(|mut s| async move { s.recv().await }.into());
         };
 
         #[cfg(not(unix))]

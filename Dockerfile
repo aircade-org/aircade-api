@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Print Rust version for debugging
+RUN rustc --version && cargo --version
+
 # Create a new empty project to cache dependencies
 WORKDIR /app
 RUN cargo init --name aircade-api
