@@ -2,7 +2,6 @@
 .gitignore
 .gitattributes
 target/
-Cargo.lock
 **/*.rs.bk
 .vscode/
 .idea/
