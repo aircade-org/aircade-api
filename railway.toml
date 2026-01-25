@@ -2,14 +2,12 @@
 # Documentation: https://docs.railway.app/reference/config-as-code
 
 [build]
-# Use the official Rust Docker image optimized for Railway
-builder = "nixpacks"
-# Build with release profile for maximum optimization
-buildCommand = "cargo build --release"
+# Use the Dockerfile for building
+builder = "dockerfile"
 
 [deploy]
-# Start the compiled binary
-startCommand = "./target/release/aircade-api"
+# Start the compiled binary (path matches Dockerfile COPY destination)
+startCommand = "/app/aircade-api"
 # Health check endpoint (implement /health in your API)
 healthcheckPath = "/health"
 # Timeout for health checks (seconds)
