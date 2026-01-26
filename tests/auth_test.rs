@@ -1,7 +1,7 @@
 mod common;
 
-use axum::Router;
 use axum::http::StatusCode;
+use axum::Router;
 use migration::{Migrator, MigratorTrait};
 use serde_json::json;
 
@@ -32,6 +32,7 @@ async fn test_app() -> Router {
             github_client_secret: String::new(),
             github_redirect_uri: String::new(),
             frontend_url: "http://localhost:3001".to_string(),
+            upload_dir: "test_uploads".to_string(),
         },
     };
 

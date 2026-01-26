@@ -50,9 +50,9 @@ overflow-checks = false # Disable overflow checks for maximum performance (use w
 
 [dependencies]
 # Web Framework & Server
-axum = { version = "0.8", features = ["default"] }             # Modern web framework built on Tokio/Tower
-tower = { version = "0.5", features = [] }                     # Middleware and service abstractions
-tower-http = { version = "0.6", features = ["cors", "trace"] } # HTTP middleware (CORS, logging, etc.)
+axum = { version = "0.8", features = ["default", "multipart"] } # Modern web framework built on Tokio/Tower
+tower = { version = "0.5", features = [] }                      # Middleware and service abstractions
+tower-http = { version = "0.6", features = ["cors", "trace"] }  # HTTP middleware (CORS, logging, etc.)
 
 # Async Runtime
 tokio = { version = "1.49", features = ["full"] } # Async runtime for non-blocking I/O

@@ -18,6 +18,7 @@ pub struct Config {
     pub github_client_secret: String,
     pub github_redirect_uri: String,
     pub frontend_url: String,
+    pub upload_dir: String,
 }
 
 /// Deployment environment.
@@ -101,6 +102,7 @@ impl Config {
             std::env::var("GITHUB_REDIRECT_URI").unwrap_or_else(|_| String::new());
         let frontend_url =
             std::env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:3001".to_string());
+        let upload_dir = std::env::var("UPLOAD_DIR").unwrap_or_else(|_| "uploads".to_string());
 
         Ok(Self {
             database_url,
@@ -118,6 +120,7 @@ impl Config {
             github_client_secret,
             github_redirect_uri,
             frontend_url,
+            upload_dir,
         })
     }
 
@@ -150,6 +153,7 @@ mod tests {
             github_client_secret: String::new(),
             github_redirect_uri: String::new(),
             frontend_url: "http://localhost:3001".to_string(),
+            upload_dir: "test_uploads".to_string(),
         };
         let addr = config.socket_addr();
         assert_eq!(addr.port(), 3000);
