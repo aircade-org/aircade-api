@@ -39,7 +39,11 @@ impl Api {
         };
 
         tracing::info!("Starting AirCade API server");
-        tracing::debug!("Configuration: host={}, port={}", config.server_host, config.server_port);
+        tracing::debug!(
+            "Configuration: host={}, port={}",
+            config.server_host,
+            config.server_port
+        );
 
         // Create application state with no DB connection yet
         let state = Arc::new(AppState {
@@ -81,7 +85,10 @@ impl Api {
     fn init_early_tracing() {
         // Use a simple format that works before config is available
         let _ = tracing_subscriber::registry()
-            .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
+            .with(
+                tracing_subscriber::EnvFilter::try_from_default_env()
+                    .unwrap_or_else(|_| "info".into()),
+            )
             .with(tracing_subscriber::fmt::layer())
             .try_init();
     }
@@ -98,7 +105,10 @@ impl Api {
 
         // Log the database host (not the full URL for security)
         if let Some(host) = config.database_url.split('@').nth(1) {
-            tracing::info!("Database host: {}", host.split('/').next().unwrap_or("unknown"));
+            tracing::info!(
+                "Database host: {}",
+                host.split('/').next().unwrap_or("unknown")
+            );
         }
 
         // Add a 30-second timeout for database connection
@@ -169,10 +179,15 @@ impl Api {
 
         #[cfg(unix)]
         let terminate = async {
-            signal::unix::signal(signal::unix::SignalKind::terminate())
-                .map_err(|e| tracing::error!("Failed to install signal handler: {e}"))
-                .ok()
-                .and_then(|mut s| async move { s.recv().await }.into());
+            match signal::unix::signal(signal::unix::SignalKind::terminate()) {
+                Ok(mut sig) => {
+                    sig.recv().await;
+                }
+                Err(e) => {
+                    tracing::error!("Failed to install signal handler: {e}");
+                    std::future::pending::<()>().await;
+                }
+            }
         };
 
         #[cfg(not(unix))]
