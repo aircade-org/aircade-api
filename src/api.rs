@@ -65,8 +65,7 @@ impl Api {
                         tracing::error!("Migration failed: {e}");
                         return;
                     }
-                    let mut db_lock = db_state.db.write().await;
-                    *db_lock = Some(db);
+                    *(db_state.db.write().await) = Some(db);
                     tracing::info!("Database ready");
                 }
                 Err(e) => {
@@ -95,7 +94,7 @@ impl Api {
 
     /// Initialize tracing subscriber for structured logging (no-op if already initialized)
     #[allow(dead_code)]
-    fn init_tracing(_config: &Config) {
+    const fn init_tracing(_config: &Config) {
         // Early tracing already initialized, this is kept for API compatibility
     }
 

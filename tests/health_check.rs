@@ -16,7 +16,10 @@ use std::time::Duration;
 /// Find an available port for testing
 fn get_available_port() -> u16 {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to port");
-    listener.local_addr().expect("Failed to get local addr").port()
+    listener
+        .local_addr()
+        .expect("Failed to get local addr")
+        .port()
 }
 
 /// Test that we can allocate an available port
@@ -165,7 +168,11 @@ fn test_database_url_formats() {
     ];
 
     for url in valid_urls {
-        assert!(url.starts_with("postgres"), "Should be a postgres URL: {}", url);
+        assert!(
+            url.starts_with("postgres"),
+            "Should be a postgres URL: {}",
+            url
+        );
         assert!(url.contains("://"), "Should be a valid URL format: {}", url);
     }
 }
@@ -174,7 +181,13 @@ fn test_database_url_formats() {
 #[test]
 fn test_env_var_naming() {
     let required_vars = vec!["DATABASE_URL"];
-    let optional_vars = vec!["PORT", "SERVER_PORT", "SERVER_HOST", "ENVIRONMENT", "LOG_LEVEL"];
+    let optional_vars = vec![
+        "PORT",
+        "SERVER_PORT",
+        "SERVER_HOST",
+        "ENVIRONMENT",
+        "LOG_LEVEL",
+    ];
 
     // All variable names should be uppercase with underscores
     for var in required_vars.iter().chain(optional_vars.iter()) {
