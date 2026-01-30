@@ -42,6 +42,10 @@ pub enum Relation {
     GameVersions,
     #[sea_orm(has_many = "super::session::Entity")]
     Sessions,
+    #[sea_orm(has_many = "super::game_asset::Entity")]
+    GameAssets,
+    #[sea_orm(has_many = "super::game_tag::Entity")]
+    GameTags,
 }
 
 impl Related<super::user::Entity> for Entity {
@@ -59,6 +63,28 @@ impl Related<super::game_version::Entity> for Entity {
 impl Related<super::session::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Sessions.def()
+    }
+}
+
+impl Related<super::game_asset::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GameAssets.def()
+    }
+}
+
+impl Related<super::game_tag::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GameTags.def()
+    }
+}
+
+impl Related<super::tag::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::game_tag::Relation::Tag.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::game_tag::Relation::Game.def().rev())
     }
 }
 
