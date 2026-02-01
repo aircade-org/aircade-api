@@ -12,7 +12,8 @@
       "Bash(ls:*)",
       "Bash(rustc:*)",
       "Bash(cargo test:*)",
-      "Bash(cargo check:*)"
+      "Bash(cargo check:*)",
+      "Bash(wc:*)"
     ]
   }
 }

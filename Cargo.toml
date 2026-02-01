@@ -77,3 +77,4 @@ dotenvy = { version = "0.15", features = [] } # Load environment variables from 
 # Utilities
 chrono = { version = "0.4", features = ["default"] } # Date and time manipulation
 async-trait = { version = "0.1", features = [] }     # Async traits for SeaORM migrations
+rand = { version = "0.8", features = ["default"] }   # Random number generation for game codes
