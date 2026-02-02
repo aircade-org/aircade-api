@@ -804,7 +804,7 @@ async fn oauth_google_callback(
     headers: HeaderMap,
     Query(query): Query<OAuthCallbackQuery>,
 ) -> Result<Response, AppError> {
-    jwt::validate_oauth_state(&query.state, &state.config.jwt_secret)
+    let state_claims = jwt::validate_oauth_state(&query.state, &state.config.jwt_secret)
         .map_err(|_| AppError::BadRequest("Invalid or expired OAuth state.".to_string()))?;
 
     let client = oauth::google_client(&state.config)?;
@@ -834,12 +834,28 @@ async fn oauth_google_callback(
     let token_pair = jwt::generate_token_pair(user_model.id, &user_model.role, &state.config)?;
     store_refresh_token(&state.db, user_model.id, &token_pair).await?;
 
-    Ok(Json(AuthResponse {
+    let auth_response = AuthResponse {
         user: user_response(&user_model),
         token: token_pair.access_token,
         refresh_token: token_pair.refresh_token,
-    })
-    .into_response())
+    };
+
+    // If redirect_uri was provided, redirect to frontend with auth data
+    if let Some(redirect_uri) = state_claims.redirect_uri {
+        let user_json =
+            serde_json::to_string(&auth_response.user).unwrap_or_else(|_| "{}".to_string());
+        let redirect_url = format!(
+            "{}?provider=google&token={}&refreshToken={}&user={}",
+            redirect_uri,
+            urlencoding::encode(&auth_response.token),
+            urlencoding::encode(&auth_response.refresh_token),
+            urlencoding::encode(&user_json)
+        );
+        return Ok(Redirect::to(&redirect_url).into_response());
+    }
+
+    // Fallback: return JSON for API clients
+    Ok(Json(auth_response).into_response())
 }
 
 /// `GET /api/v1/auth/oauth/github`
@@ -871,7 +887,7 @@ async fn oauth_github_callback(
     headers: HeaderMap,
     Query(query): Query<OAuthCallbackQuery>,
 ) -> Result<Response, AppError> {
-    jwt::validate_oauth_state(&query.state, &state.config.jwt_secret)
+    let state_claims = jwt::validate_oauth_state(&query.state, &state.config.jwt_secret)
         .map_err(|_| AppError::BadRequest("Invalid or expired OAuth state.".to_string()))?;
 
     let client = oauth::github_client(&state.config)?;
@@ -908,12 +924,28 @@ async fn oauth_github_callback(
     let token_pair = jwt::generate_token_pair(user_model.id, &user_model.role, &state.config)?;
     store_refresh_token(&state.db, user_model.id, &token_pair).await?;
 
-    Ok(Json(AuthResponse {
+    let auth_response = AuthResponse {
         user: user_response(&user_model),
         token: token_pair.access_token,
         refresh_token: token_pair.refresh_token,
-    })
-    .into_response())
+    };
+
+    // If redirect_uri was provided, redirect to frontend with auth data
+    if let Some(redirect_uri) = state_claims.redirect_uri {
+        let user_json =
+            serde_json::to_string(&auth_response.user).unwrap_or_else(|_| "{}".to_string());
+        let redirect_url = format!(
+            "{}?provider=github&token={}&refreshToken={}&user={}",
+            redirect_uri,
+            urlencoding::encode(&auth_response.token),
+            urlencoding::encode(&auth_response.refresh_token),
+            urlencoding::encode(&user_json)
+        );
+        return Ok(Redirect::to(&redirect_url).into_response());
+    }
+
+    // Fallback: return JSON for API clients
+    Ok(Json(auth_response).into_response())
 }
 
 /// `POST /api/v1/auth/link/{provider}`

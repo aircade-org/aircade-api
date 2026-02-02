@@ -87,12 +87,13 @@ oauth2 = { version = "5.0", features = ["reqwest"] }                            
 reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false } # HTTP client for OAuth token exchange
 
 # Utilities
-chrono = { version = "0.4", features = ["default"] } # Date and time manipulation
-async-trait = { version = "0.1", features = [] }     # Async traits for SeaORM migrations
-rand = { version = "0.8", features = ["default"] }   # Random number generation for game codes
-uuid = { version = "1.0", features = ["v4"] }        # UUID generation for entity identifiers
-futures-util = { version = "0.3", features = [] }    # Stream utilities for WebSocket message handling
-dashmap = { version = "6.1" }                        # Concurrent hash map for in-memory session connections
+chrono = { version = "0.4", features = ["default"] }   # Date and time manipulation
+async-trait = { version = "0.1", features = [] }       # Async traits for SeaORM migrations
+rand = { version = "0.8", features = ["default"] }     # Random number generation for game codes
+uuid = { version = "1.0", features = ["v4"] }          # UUID generation for entity identifiers
+futures-util = { version = "0.3", features = [] }      # Stream utilities for WebSocket message handling
+dashmap = { version = "6.1" }                          # Concurrent hash map for in-memory session connections
+urlencoding = { version = "2.1", features = [] }       # URL encoding for OAuth redirect parameters
 
 # Internal crates
 migration = { path = "migration" } # SeaORM database migrations
