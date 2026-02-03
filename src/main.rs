@@ -1,8 +1,8 @@
 use std::time::Duration;
 
-use axum::http::{header, Method, Request};
-use axum::response::Response;
 use axum::Router;
+use axum::http::{Method, Request, header};
+use axum::response::Response;
 use migration::{Migrator, MigratorTrait};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
