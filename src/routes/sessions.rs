@@ -439,7 +439,7 @@ async fn load_game(
         return Err(AppError::BadRequest("Session has ended.".to_string()));
     }
 
-    // Validate game exists and is published
+    // Validate game exists and is published (resource validation first)
     let found_game = game::Entity::find_by_id(body.game_id)
         .one(&state.db)
         .await
@@ -448,6 +448,23 @@ async fn load_game(
 
     if found_game.status != "published" {
         return Err(AppError::BadRequest("Game is not published.".to_string()));
+    }
+
+    // Validate host is connected via WebSocket (operational validation)
+    if !state
+        .session_manager
+        .is_connected(session_id, &ClientRole::Host)
+    {
+        return Err(AppError::BadRequest(
+            "Host must be connected via WebSocket to start the game.".to_string(),
+        ));
+    }
+
+    // Validate at least one player is connected via WebSocket
+    if !state.session_manager.has_connected_players(session_id) {
+        return Err(AppError::BadRequest(
+            "At least one player must be connected to start the game.".to_string(),
+        ));
     }
 
     // Get the published version

@@ -104,4 +104,14 @@ impl SessionManager {
             .get(&session_id)
             .is_some_and(|clients| clients.contains_key(role))
     }
+
+    /// Check if any players are connected to a session.
+    #[must_use]
+    pub fn has_connected_players(&self, session_id: Uuid) -> bool {
+        self.sessions.get(&session_id).is_some_and(|clients| {
+            clients
+                .iter()
+                .any(|entry| matches!(entry.key(), ClientRole::Player(_)))
+        })
+    }
 }

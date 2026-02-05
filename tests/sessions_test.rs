@@ -4,12 +4,13 @@ use axum::Router;
 use axum::http::StatusCode;
 use migration::{Migrator, MigratorTrait};
 use serde_json::json;
+use uuid::Uuid;
 
 use aircade_api::config::{Config, Environment};
-use aircade_api::sessions::SessionManager;
+use aircade_api::sessions::{ClientRole, SessionManager};
 use aircade_api::state::AppState;
 
-async fn test_app() -> Router {
+async fn test_app() -> (Router, AppState) {
     let db = sea_orm::Database::connect("sqlite::memory:")
         .await
         .unwrap_or_default();
@@ -38,7 +39,8 @@ async fn test_app() -> Router {
         session_manager: SessionManager::new(),
     };
 
-    aircade_api::routes::router().with_state(state)
+    let router = aircade_api::routes::router().with_state(state.clone());
+    (router, state)
 }
 
 /// Sign up a user and return (`access_token`, `refresh_token`).
@@ -78,13 +80,29 @@ async fn create_session(app: &Router, token: &str) -> serde_json::Value {
     serde_json::from_str(&body).unwrap_or_default()
 }
 
+/// Simulate WebSocket connections for testing (registers mock connections with session manager).
+/// This is needed because `load_game` now validates that host and at least one player are connected.
+fn simulate_ws_connections(
+    session_manager: &SessionManager,
+    session_id: Uuid,
+    player_id: Option<Uuid>,
+) {
+    let (host_tx, _) = tokio::sync::mpsc::unbounded_channel();
+    session_manager.register(session_id, ClientRole::Host, host_tx);
+
+    if let Some(pid) = player_id {
+        let (player_tx, _) = tokio::sync::mpsc::unbounded_channel();
+        session_manager.register(session_id, ClientRole::Player(pid), player_tx);
+    }
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // POST /api/v1/sessions — Create Session
 // ──────────────────────────────────────────────────────────────────────────────
 
 #[tokio::test]
 async fn create_session_unauthenticated_returns_401() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (status, _body) =
         common::post_json(&app, "/api/v1/sessions", &json!({ "maxPlayers": 4 })).await;
     assert_eq!(status, StatusCode::UNAUTHORIZED);
@@ -92,7 +110,7 @@ async fn create_session_unauthenticated_returns_401() {
 
 #[tokio::test]
 async fn create_session_success() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) = signup_user(&app, "host@example.com", "hostuser", "Password123").await;
 
     let session_json = create_session(&app, &token).await;
@@ -118,7 +136,7 @@ async fn create_session_success() {
 
 #[tokio::test]
 async fn create_session_default_max_players() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host2@example.com", "host2user", "Password123").await;
 
@@ -136,7 +154,7 @@ async fn create_session_default_max_players() {
 
 #[tokio::test]
 async fn get_session_success() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host3@example.com", "host3user", "Password123").await;
 
@@ -153,7 +171,7 @@ async fn get_session_success() {
 
 #[tokio::test]
 async fn get_session_case_insensitive() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host4@example.com", "host4user", "Password123").await;
 
@@ -169,7 +187,7 @@ async fn get_session_case_insensitive() {
 
 #[tokio::test]
 async fn get_session_not_found() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (status, _body) = common::get(&app, "/api/v1/sessions/ZZZZZ").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
@@ -180,7 +198,7 @@ async fn get_session_not_found() {
 
 #[tokio::test]
 async fn join_session_success() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host5@example.com", "host5user", "Password123").await;
 
@@ -208,7 +226,7 @@ async fn join_session_success() {
 
 #[tokio::test]
 async fn join_session_not_found() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (status, _body) = common::post_json(
         &app,
         "/api/v1/sessions/ZZZZZ/join",
@@ -220,7 +238,7 @@ async fn join_session_not_found() {
 
 #[tokio::test]
 async fn join_session_full() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host6@example.com", "host6user", "Password123").await;
 
@@ -257,7 +275,7 @@ async fn join_session_full() {
 
 #[tokio::test]
 async fn join_session_empty_display_name() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host7@example.com", "host7user", "Password123").await;
 
@@ -279,7 +297,7 @@ async fn join_session_empty_display_name() {
 
 #[tokio::test]
 async fn list_players_success() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host8@example.com", "host8user", "Password123").await;
 
@@ -310,7 +328,7 @@ async fn list_players_success() {
 
 #[tokio::test]
 async fn list_players_session_not_found() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let fake_id = "00000000-0000-0000-0000-000000000099";
     let (status, _body) = common::get(&app, &format!("/api/v1/sessions/{fake_id}/players")).await;
     assert_eq!(status, StatusCode::NOT_FOUND);
@@ -322,7 +340,7 @@ async fn list_players_session_not_found() {
 
 #[tokio::test]
 async fn end_session_success() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host9@example.com", "host9user", "Password123").await;
 
@@ -348,7 +366,7 @@ async fn end_session_success() {
 
 #[tokio::test]
 async fn end_session_not_host_returns_403() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (host_token, _) =
         signup_user(&app, "host10@example.com", "host10user", "Password123").await;
     let (other_token, _) = signup_user(&app, "other@example.com", "otheruser", "Password123").await;
@@ -368,7 +386,7 @@ async fn end_session_not_host_returns_403() {
 
 #[tokio::test]
 async fn end_session_already_ended() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host11@example.com", "host11user", "Password123").await;
 
@@ -402,12 +420,17 @@ async fn end_session_already_ended() {
 
 #[tokio::test]
 async fn load_game_success() {
-    let app = test_app().await;
+    let (app, state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host12@example.com", "host12user", "Password123").await;
 
     let session_json = create_session(&app, &token).await;
     let session_id = session_json["id"].as_str().unwrap_or_default();
+    let session_uuid = Uuid::parse_str(session_id).unwrap_or_default();
+
+    // Simulate WebSocket connections (host + mock player)
+    let mock_player_id = Uuid::new_v4();
+    simulate_ws_connections(&state.session_manager, session_uuid, Some(mock_player_id));
 
     // Use the seeded Pong game ID
     let pong_game_id = "00000000-0000-0000-0000-000000000010";
@@ -434,7 +457,7 @@ async fn load_game_success() {
 
 #[tokio::test]
 async fn load_game_not_host_returns_403() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (host_token, _) =
         signup_user(&app, "host13@example.com", "host13user", "Password123").await;
     let (other_token, _) =
@@ -456,13 +479,18 @@ async fn load_game_not_host_returns_403() {
 
 #[tokio::test]
 async fn load_game_not_found() {
-    let app = test_app().await;
+    let (app, state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host14@example.com", "host14user", "Password123").await;
 
     let session_json = create_session(&app, &token).await;
     let session_id = session_json["id"].as_str().unwrap_or_default();
+    let session_uuid = Uuid::parse_str(session_id).unwrap_or_default();
     let fake_game_id = "00000000-0000-0000-0000-000000000099";
+
+    // Simulate WebSocket connections (required to get past connection check)
+    let mock_player_id = Uuid::new_v4();
+    simulate_ws_connections(&state.session_manager, session_uuid, Some(mock_player_id));
 
     let (status, _body) = common::post_json_with_auth(
         &app,
@@ -476,7 +504,7 @@ async fn load_game_not_found() {
 
 #[tokio::test]
 async fn load_game_on_ended_session() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host15@example.com", "host15user", "Password123").await;
 
@@ -509,7 +537,7 @@ async fn load_game_on_ended_session() {
 
 #[tokio::test]
 async fn session_code_format() {
-    let app = test_app().await;
+    let (app, _state) = test_app().await;
     let (token, _refresh) =
         signup_user(&app, "host16@example.com", "host16user", "Password123").await;
 
@@ -535,13 +563,14 @@ async fn session_code_format() {
 
 #[tokio::test]
 async fn full_session_flow() {
-    let app = test_app().await;
+    let (app, state) = test_app().await;
     let (host_token, _) =
         signup_user(&app, "flow_host@example.com", "flowhost", "Password123").await;
 
     // 1. Create session
     let session_json = create_session(&app, &host_token).await;
     let session_id = session_json["id"].as_str().unwrap_or_default();
+    let session_uuid = Uuid::parse_str(session_id).unwrap_or_default();
     let code = session_json["sessionCode"].as_str().unwrap_or_default();
     assert_eq!(session_json["status"], "lobby");
 
@@ -555,6 +584,7 @@ async fn full_session_flow() {
     assert_eq!(status, StatusCode::CREATED);
     let join_resp: serde_json::Value = serde_json::from_str(&body).unwrap_or_default();
     let player_id = join_resp["player"]["id"].as_str().unwrap_or_default();
+    let player_uuid = Uuid::parse_str(player_id).unwrap_or_default();
     assert!(!player_id.is_empty());
 
     // 3. Session now shows 1 player
@@ -570,7 +600,10 @@ async fn full_session_flow() {
         1
     );
 
-    // 4. Load Pong game
+    // 4. Simulate WebSocket connections (host + the actual player who joined)
+    simulate_ws_connections(&state.session_manager, session_uuid, Some(player_uuid));
+
+    // 5. Load Pong game
     let pong_game_id = "00000000-0000-0000-0000-000000000010";
     let (status, body) = common::post_json_with_auth(
         &app,
@@ -583,7 +616,7 @@ async fn full_session_flow() {
     let load_resp: serde_json::Value = serde_json::from_str(&body).unwrap_or_default();
     assert_eq!(load_resp["status"], "playing");
 
-    // 5. Session shows "playing" status
+    // 6. Session shows "playing" status
     let (status, body) = common::get(&app, &format!("/api/v1/sessions/{code}")).await;
     assert_eq!(status, StatusCode::OK);
     let updated_session: serde_json::Value = serde_json::from_str(&body).unwrap_or_default();
@@ -593,7 +626,7 @@ async fn full_session_flow() {
         pong_game_id
     );
 
-    // 6. End session
+    // 7. End session
     let (status, _body) = common::post_json_with_auth(
         &app,
         &format!("/api/v1/sessions/{session_id}/end"),
