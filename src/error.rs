@@ -1,6 +1,6 @@
-use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use axum::Json;
 use serde_json::json;
 
 /// Unified application error type that maps to JSON HTTP responses.
@@ -17,8 +17,12 @@ pub enum AppError {
     NotFound(String),
     /// 409 Conflict
     Conflict(String),
-    /// 422 Unprocessable Entity
+    /// 413 Payload Too Large
+    PayloadTooLarge(String),
+    /// 422 Unprocessable Entity (generic, code defaults to `VALIDATION_ERROR`)
     UnprocessableEntity(String),
+    /// 422 Unprocessable Entity with explicit error code
+    Unprocessable(String, String),
     /// 500 Internal Server Error (wraps any error, logs details, returns generic message)
     Internal(anyhow::Error),
 }
@@ -26,19 +30,27 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, code, message) = match self {
-            Self::BadRequest(msg) => (StatusCode::BAD_REQUEST, "BAD_REQUEST", msg),
-            Self::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", msg),
-            Self::Forbidden(msg) => (StatusCode::FORBIDDEN, "FORBIDDEN", msg),
-            Self::NotFound(msg) => (StatusCode::NOT_FOUND, "NOT_FOUND", msg),
-            Self::Conflict(msg) => (StatusCode::CONFLICT, "CONFLICT", msg),
-            Self::UnprocessableEntity(msg) => {
-                (StatusCode::UNPROCESSABLE_ENTITY, "VALIDATION_ERROR", msg)
-            }
+            Self::BadRequest(msg) => (StatusCode::BAD_REQUEST, "BAD_REQUEST".to_string(), msg),
+            Self::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED".to_string(), msg),
+            Self::Forbidden(msg) => (StatusCode::FORBIDDEN, "FORBIDDEN".to_string(), msg),
+            Self::NotFound(msg) => (StatusCode::NOT_FOUND, "NOT_FOUND".to_string(), msg),
+            Self::Conflict(msg) => (StatusCode::CONFLICT, "CONFLICT".to_string(), msg),
+            Self::PayloadTooLarge(msg) => (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                "PAYLOAD_TOO_LARGE".to_string(),
+                msg,
+            ),
+            Self::UnprocessableEntity(msg) => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "VALIDATION_ERROR".to_string(),
+                msg,
+            ),
+            Self::Unprocessable(code, msg) => (StatusCode::UNPROCESSABLE_ENTITY, code, msg),
             Self::Internal(err) => {
                 tracing::error!("Internal server error: {err:#}");
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    "INTERNAL_ERROR",
+                    "INTERNAL_ERROR".to_string(),
                     "An internal error occurred".to_string(),
                 )
             }

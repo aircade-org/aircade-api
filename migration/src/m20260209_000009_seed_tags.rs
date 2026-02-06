@@ -1,0 +1,185 @@
+use sea_orm_migration::prelude::*;
+use uuid::Uuid;
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+#[allow(clippy::too_many_lines)]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        let insert = Query::insert()
+            .into_table(Tag::Table)
+            .columns([Tag::Id, Tag::Name, Tag::Slug, Tag::Category])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Racing".into(),
+                "racing".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Trivia".into(),
+                "trivia".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Drawing".into(),
+                "drawing".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Strategy".into(),
+                "strategy".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Puzzle".into(),
+                "puzzle".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Action".into(),
+                "action".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Sports".into(),
+                "sports".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Rhythm".into(),
+                "rhythm".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Party".into(),
+                "party".into(),
+                "genre".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Word".into(),
+                "word".into(),
+                "genre".into(),
+            ])
+            // Mood tags
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Competitive".into(),
+                "competitive".into(),
+                "mood".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Cooperative".into(),
+                "cooperative".into(),
+                "mood".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Relaxed".into(),
+                "relaxed".into(),
+                "mood".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Chaotic".into(),
+                "chaotic".into(),
+                "mood".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Creative".into(),
+                "creative".into(),
+                "mood".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Silly".into(),
+                "silly".into(),
+                "mood".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Strategic".into(),
+                "strategic".into(),
+                "mood".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Fast-Paced".into(),
+                "fast-paced".into(),
+                "mood".into(),
+            ])
+            // Player style tags
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Free-for-all".into(),
+                "free-for-all".into(),
+                "playerStyle".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Teams".into(),
+                "teams".into(),
+                "playerStyle".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Turn-based".into(),
+                "turn-based".into(),
+                "playerStyle".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Real-time".into(),
+                "real-time".into(),
+                "playerStyle".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Solo".into(),
+                "solo".into(),
+                "playerStyle".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Multiplayer".into(),
+                "multiplayer".into(),
+                "playerStyle".into(),
+            ])
+            .values_panic([
+                Uuid::new_v4().to_string().into(),
+                "Versus".into(),
+                "versus".into(),
+                "playerStyle".into(),
+            ])
+            .to_owned();
+
+        manager.exec_stmt(insert).await
+    }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .exec_stmt(Query::delete().from_table(Tag::Table).to_owned())
+            .await
+    }
+}
+
+#[derive(DeriveIden)]
+enum Tag {
+    Table,
+    Id,
+    Name,
+    Slug,
+    Category,
+}
