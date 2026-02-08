@@ -8,6 +8,16 @@ pub struct Config {
     pub server_port: u16,
     pub environment: Environment,
     pub log_level: String,
+    pub jwt_secret: String,
+    pub jwt_access_expiration_secs: u64,
+    pub jwt_refresh_expiration_secs: u64,
+    pub google_client_id: String,
+    pub google_client_secret: String,
+    pub google_redirect_uri: String,
+    pub github_client_id: String,
+    pub github_client_secret: String,
+    pub github_redirect_uri: String,
+    pub frontend_url: String,
 }
 
 /// Deployment environment.
@@ -66,12 +76,48 @@ impl Config {
 
         let log_level = std::env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
 
+        let jwt_secret =
+            std::env::var("JWT_SECRET").map_err(|_| anyhow::anyhow!("JWT_SECRET must be set"))?;
+
+        let jwt_access_expiration_secs = std::env::var("JWT_ACCESS_EXPIRATION")
+            .unwrap_or_else(|_| "900".to_string())
+            .parse::<u64>()
+            .map_err(|_| anyhow::anyhow!("JWT_ACCESS_EXPIRATION must be a valid u64"))?;
+
+        let jwt_refresh_expiration_secs = std::env::var("JWT_REFRESH_EXPIRATION")
+            .unwrap_or_else(|_| "604800".to_string())
+            .parse::<u64>()
+            .map_err(|_| anyhow::anyhow!("JWT_REFRESH_EXPIRATION must be a valid u64"))?;
+
+        let google_client_id = std::env::var("GOOGLE_CLIENT_ID").unwrap_or_else(|_| String::new());
+        let google_client_secret =
+            std::env::var("GOOGLE_CLIENT_SECRET").unwrap_or_else(|_| String::new());
+        let google_redirect_uri =
+            std::env::var("GOOGLE_REDIRECT_URI").unwrap_or_else(|_| String::new());
+        let github_client_id = std::env::var("GITHUB_CLIENT_ID").unwrap_or_else(|_| String::new());
+        let github_client_secret =
+            std::env::var("GITHUB_CLIENT_SECRET").unwrap_or_else(|_| String::new());
+        let github_redirect_uri =
+            std::env::var("GITHUB_REDIRECT_URI").unwrap_or_else(|_| String::new());
+        let frontend_url =
+            std::env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:3001".to_string());
+
         Ok(Self {
             database_url,
             server_host,
             server_port,
             environment,
             log_level,
+            jwt_secret,
+            jwt_access_expiration_secs,
+            jwt_refresh_expiration_secs,
+            google_client_id,
+            google_client_secret,
+            google_redirect_uri,
+            github_client_id,
+            github_client_secret,
+            github_redirect_uri,
+            frontend_url,
         })
     }
 
@@ -94,6 +140,16 @@ mod tests {
             server_port: 3000,
             environment: Environment::Development,
             log_level: "info".to_string(),
+            jwt_secret: "test-secret".to_string(),
+            jwt_access_expiration_secs: 900,
+            jwt_refresh_expiration_secs: 604_800,
+            google_client_id: String::new(),
+            google_client_secret: String::new(),
+            google_redirect_uri: String::new(),
+            github_client_id: String::new(),
+            github_client_secret: String::new(),
+            github_redirect_uri: String::new(),
+            frontend_url: "http://localhost:3001".to_string(),
         };
         let addr = config.socket_addr();
         assert_eq!(addr.port(), 3000);

@@ -1,3 +1,4 @@
+mod auth;
 mod health;
 
 use axum::Router;
@@ -9,8 +10,11 @@ use crate::state::AppState;
 /// Structure:
 /// - `GET /health` — lightweight health check (used by Railway)
 /// - `GET /api/v1/health` — detailed health check with database connectivity
+/// - `/api/v1/auth/...` — authentication endpoints
 pub fn router() -> Router<AppState> {
-    let api_v1 = Router::new().merge(health::api_router());
+    let api_v1 = Router::new()
+        .merge(health::api_router())
+        .nest("/auth", auth::router());
 
     Router::new()
         .merge(health::root_router())
