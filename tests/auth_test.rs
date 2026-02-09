@@ -6,6 +6,7 @@ use migration::{Migrator, MigratorTrait};
 use serde_json::json;
 
 use aircade_api::config::{Config, Environment};
+use aircade_api::sessions::SessionManager;
 use aircade_api::state::AppState;
 
 async fn test_app() -> Router {
@@ -34,6 +35,7 @@ async fn test_app() -> Router {
             frontend_url: "http://localhost:3001".to_string(),
             upload_dir: "test_uploads".to_string(),
         },
+        session_manager: SessionManager::new(),
     };
 
     aircade_api::routes::router().with_state(state)

@@ -4,4 +4,5 @@ pub mod db;
 pub mod entities;
 pub mod error;
 pub mod routes;
+pub mod sessions;
 pub mod state;

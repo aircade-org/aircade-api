@@ -15,6 +15,7 @@ use aircade_api::auth::middleware::{AdminUser, AuthUser, ModeratorUser};
 use aircade_api::auth::password;
 use aircade_api::config::{Config, Environment};
 use aircade_api::entities::{auth_provider, user};
+use aircade_api::sessions::SessionManager;
 use aircade_api::state::AppState;
 
 fn test_config() -> Config {
@@ -47,6 +48,7 @@ async fn test_app_with_middleware_routes() -> (Router, AppState) {
     let state = AppState {
         db,
         config: test_config(),
+        session_manager: SessionManager::new(),
     };
 
     // Create test routes that exercise the middleware extractors

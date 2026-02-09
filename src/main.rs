@@ -11,6 +11,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
 use aircade_api::config::{Config, Environment};
+use aircade_api::sessions::SessionManager;
 use aircade_api::state::AppState;
 
 #[tokio::main]
@@ -41,6 +42,7 @@ async fn main() -> anyhow::Result<()> {
     let state = AppState {
         db,
         config: config.clone(),
+        session_manager: SessionManager::new(),
     };
 
     // Build the application with middleware
