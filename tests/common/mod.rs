@@ -1,6 +1,6 @@
+use axum::Router;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
-use axum::Router;
 use http_body_util::BodyExt;
 use tower::ServiceExt;
 

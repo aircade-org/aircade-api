@@ -59,7 +59,13 @@ async fn main() -> anyhow::Result<()> {
 /// Build the full application router with all middleware layers.
 fn build_app(state: AppState, config: &Config) -> Router {
     let cors = if config.environment == Environment::Production {
+        let origin = config
+            .frontend_url
+            .parse::<axum::http::HeaderValue>()
+            .unwrap_or_else(|_| axum::http::HeaderValue::from_static("http://localhost:3001"));
+
         CorsLayer::new()
+            .allow_origin(origin)
             .allow_methods([
                 Method::GET,
                 Method::POST,

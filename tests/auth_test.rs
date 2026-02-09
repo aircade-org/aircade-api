@@ -1,7 +1,7 @@
 mod common;
 
-use axum::http::StatusCode;
 use axum::Router;
+use axum::http::StatusCode;
 use migration::{Migrator, MigratorTrait};
 use serde_json::json;
 
