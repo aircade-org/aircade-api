@@ -3,7 +3,7 @@ members = [".", "migration"]
 
 [package]
 name = "aircade-api"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 description = "Backend API for AirCade - a browser-based party game platform"
 license = "MIT"
