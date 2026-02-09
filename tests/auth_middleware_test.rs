@@ -34,6 +34,7 @@ fn test_config() -> Config {
         github_client_secret: String::new(),
         github_redirect_uri: String::new(),
         frontend_url: "http://localhost:3001".to_string(),
+        upload_dir: "test_uploads".to_string(),
     }
 }
 
