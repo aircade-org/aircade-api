@@ -9,6 +9,11 @@ mod m20260209_000002_create_game_version_table;
 mod m20260209_000003_create_session_table;
 mod m20260209_000004_create_player_table;
 mod m20260209_000005_seed_pong_game;
+mod m20260209_000006_create_game_asset_table;
+mod m20260209_000007_create_tag_table;
+mod m20260209_000008_create_game_tag_table;
+mod m20260209_000009_seed_tags;
+mod m20260210_000001_update_game_version_table;
 
 pub struct Migrator;
 
@@ -25,6 +30,11 @@ impl MigratorTrait for Migrator {
             Box::new(m20260209_000003_create_session_table::Migration),
             Box::new(m20260209_000004_create_player_table::Migration),
             Box::new(m20260209_000005_seed_pong_game::Migration),
+            Box::new(m20260209_000006_create_game_asset_table::Migration),
+            Box::new(m20260209_000007_create_tag_table::Migration),
+            Box::new(m20260209_000008_create_game_tag_table::Migration),
+            Box::new(m20260209_000009_seed_tags::Migration),
+            Box::new(m20260210_000001_update_game_version_table::Migration),
         ]
     }
 }

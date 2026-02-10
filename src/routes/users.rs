@@ -13,6 +13,7 @@ use crate::auth::middleware::AuthUser;
 use crate::auth::password;
 use crate::entities::{auth_provider, user};
 use crate::error::AppError;
+use crate::routes::games;
 use crate::state::AppState;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -29,7 +30,9 @@ pub fn router() -> Router<AppState> {
         .route("/me/avatar", post(upload_avatar).delete(delete_avatar))
         .route("/me/username", patch(change_username))
         .route("/me/email", patch(change_email))
+        .route("/me/games", get(games::list_my_games))
         .route("/{username}", get(get_public_profile))
+        .route("/{username}/games", get(games::list_user_games))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
